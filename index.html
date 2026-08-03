@@ -249,6 +249,7 @@
   .join-form input::placeholder { color: #8a7d63; }
   .join-note { font-family: 'VT323', monospace; font-size: 1.15rem; color: #a99a7a; margin-top: 18px; }
   .join-ok { display: none; margin-top: 22px; font-family: 'VT323', monospace; font-size: 1.4rem; color: var(--amber); }
+  .join-err { display: none; margin-top: 18px; font-family: 'VT323', monospace; font-size: 1.2rem; color: #ff8a7a; }
 
   /* ---------- FOOTER ---------- */
   footer { background: var(--paper); padding: 46px 0 60px; }
@@ -468,10 +469,13 @@
     <p class="sub">One newsletter that reads your mind and your calendar: war stories from inside the timesheet-industrial complex, the occasional genuinely useful tool, and the grim solidarity of thousands of people rounding up together. Free. Anonymous. Unsubscribe the moment your rage subsides.</p>
 
     <form class="join-form" id="joinForm" novalidate>
-      <input type="email" id="joinEmail" placeholder="you@wherever-you'd-rather-be.com" aria-label="Email address" required />
+      <input type="email" id="joinEmail" name="email" placeholder="you@wherever-you'd-rather-be.com" aria-label="Email address" required />
+      <!-- honeypot: real people leave this empty; bots trip it -->
+      <input type="checkbox" name="botcheck" id="botcheck" tabindex="-1" autocomplete="off" style="display:none !important;" aria-hidden="true" />
       <button type="submit" class="btn">Join the community</button>
     </form>
     <p class="join-ok" id="joinOk">✓ You're in. Check your inbox. Log it as 0.1 — "Professional Development."</p>
+    <p class="join-err" id="joinErr">&gt; Hmm, that didn't go through. Mind trying again?</p>
     <p class="join-note">&gt; Be early. Join the founding members — the first thousand to admit it out loud.</p>
   </div>
 </section>
@@ -560,21 +564,52 @@
     requestAnimationFrame(tick);
   })();
 
-  // ---- Join form (placeholder — wire to your ESP later) ----
+  // ---- Join form -> Web3Forms (emails each signup to the site owner) ----
   (function () {
     var form = document.getElementById('joinForm');
     if (!form) return;
+    var WEB3FORMS_KEY = '525b4e6e-5947-4fa0-9192-04146941d12d';
+    var okEl  = document.getElementById('joinOk');
+    var errEl = document.getElementById('joinErr');
+    var btn   = form.querySelector('button[type="submit"]');
+    var btnText = btn ? btn.textContent : 'Join the community';
+
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var email = document.getElementById('joinEmail');
-      if (!email.value || email.value.indexOf('@') === -1) {
-        email.focus();
-        return;
-      }
-      /* TODO: POST to your email provider (Beehiiv / ConvertKit / Substack / Circle).
-         For now we just confirm on the page. */
-      form.style.display = 'none';
-      document.getElementById('joinOk').style.display = 'block';
+      var emailEl = document.getElementById('joinEmail');
+      var email = (emailEl.value || '').trim();
+      if (!email || email.indexOf('@') < 1) { emailEl.focus(); return; }
+      // honeypot: if a bot checked the hidden box, silently drop it
+      var hp = document.getElementById('botcheck');
+      if (hp && hp.checked) { return; }
+
+      if (errEl) errEl.style.display = 'none';
+      if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; }
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: 'New timetrackingsucks.com signup 🎉',
+          from_name: 'Time Tracking Sucks',
+          email: email,
+          message: 'Someone joined the community: ' + email
+        })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.success) {
+          form.style.display = 'none';
+          if (okEl) okEl.style.display = 'block';
+        } else {
+          throw new Error((data && data.message) || 'submit failed');
+        }
+      })
+      .catch(function () {
+        if (btn) { btn.disabled = false; btn.textContent = btnText; }
+        if (errEl) errEl.style.display = 'block';
+      });
     });
   })();
 </script>
