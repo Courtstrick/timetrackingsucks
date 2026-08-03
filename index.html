@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Time Tracking Sucks — a support group disguised as a website</title>
+<meta name="description" content="Nobody has ever filed a timesheet and felt good about it. A community for the millions of people reverse-engineering their week every Friday at 4:47pm." />
+
+<!-- Social share -->
+<meta property="og:title" content="Time Tracking Sucks" />
+<meta property="og:description" content="A support group for everyone reverse-engineering their week from Slack messages and a haunted calendar. Join the community." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://timetrackingsucks.com" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --paper:      #f1e7d3;   /* warm oatmeal base */
+    --paper-2:    #e7d9bd;   /* deeper paper */
+    --paper-3:    #ded0b2;
+    --ink:        #211c16;   /* warm near-black */
+    --ink-soft:   #5b5140;
+    --red:        #e0342a;   /* alarm / billing red */
+    --red-deep:   #b8281f;
+    --amber:      #f4b53a;   /* highlighter */
+    --win:        #d6d0c2;   /* classic window gray */
+    --win-line:   #211c16;
+    --dark:       #211c16;
+    --dark-2:     #2c261d;
+    --maxw:       1140px;
+    --shadow-hard: 5px 5px 0 var(--ink);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 82px; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    /* subtle dither / graph-paper texture */
+    background-image:
+      linear-gradient(rgba(33,28,22,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(33,28,22,0.035) 1px, transparent 1px);
+    background-size: 26px 26px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .pixel { font-family: 'Silkscreen', monospace; }
+  .mono  { font-family: 'VT323', monospace; }
+
+  .eyebrow {
+    font-family: 'Silkscreen', monospace; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--red);
+    margin-bottom: 18px; display: inline-block;
+  }
+
+  /* ---------- BUTTONS ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
+    padding: 13px 22px; cursor: pointer; border: 2.5px solid var(--ink);
+    background: var(--red); color: var(--paper); box-shadow: var(--shadow-hard);
+    transition: transform .08s ease, box-shadow .08s ease; text-align: center;
+  }
+  .btn:hover { transform: translate(2px,2px); box-shadow: 3px 3px 0 var(--ink); }
+  .btn:active { transform: translate(5px,5px); box-shadow: 0 0 0 var(--ink); }
+  .btn-ghost { background: var(--paper); color: var(--ink); }
+  .btn-dark  { background: var(--ink); color: var(--paper); }
+  .btn-amber { background: var(--amber); color: var(--ink); }
+  .btn-sm { font-size: 0.86rem; padding: 10px 16px; box-shadow: 3px 3px 0 var(--ink); }
+  .btn-sm:hover { box-shadow: 2px 2px 0 var(--ink); }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--paper);
+    border-bottom: 2.5px solid var(--ink);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+  .brand { font-family: 'Silkscreen', monospace; font-weight: 700; font-size: 1.02rem; letter-spacing: -0.02em; color: var(--ink); }
+  .brand .cursor { color: var(--red); animation: blink 1.1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .nav-right { display: flex; align-items: center; gap: 22px; }
+  .nav-links { display: flex; gap: 22px; }
+  .nav-links a { font-size: 0.92rem; font-weight: 600; color: var(--ink-soft); }
+  .nav-links a:hover { color: var(--red); }
+
+  /* ---------- WINDOW CHROME (classic mac/pixel) ---------- */
+  .window { background: var(--win); border: 2.5px solid var(--win-line); box-shadow: var(--shadow-hard); }
+  .titlebar {
+    display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px;
+    border-bottom: 2.5px solid var(--win-line);
+    background-image: repeating-linear-gradient(var(--win-line) 0 1px, transparent 1px 3px);
+  }
+  .titlebar .close { width: 13px; height: 13px; background: var(--win); border: 2px solid var(--win-line); }
+  .titlebar .t-label {
+    font-family: 'Silkscreen', monospace; font-size: 0.62rem; letter-spacing: 0.02em;
+    background: var(--win); padding: 2px 12px; margin: 0 auto; border: 2px solid var(--win-line);
+    white-space: nowrap;
+  }
+  .titlebar .spacer { width: 13px; }
+
+  /* ---------- HERO ---------- */
+  header.hero { padding: 74px 0 68px; border-bottom: 2.5px solid var(--ink); position: relative; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 54px; align-items: center; }
+  .hero h1 {
+    font-size: clamp(3rem, 7vw, 5.6rem); color: var(--ink); letter-spacing: -0.03em;
+    text-transform: none;
+  }
+  .hero h1 .dot { color: var(--red); }
+  .hero .lede { font-size: 1.16rem; color: var(--ink-soft); margin-top: 22px; max-width: 46ch; }
+  .hero .lede strong { color: var(--ink); font-weight: 600; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+  .hero-fine { margin-top: 18px; font-family: 'VT323', monospace; font-size: 1.05rem; color: var(--ink-soft); }
+
+  /* Fake timesheet app in hero */
+  .app-window { transform: rotate(-1.1deg); }
+  .app-body { padding: 14px 14px 16px; background: #fbf6ea; }
+  .sheet-head {
+    display: grid; grid-template-columns: 46px 1fr 52px; gap: 8px;
+    font-family: 'Silkscreen', monospace; font-size: 0.56rem; letter-spacing: 0.04em;
+    color: var(--ink); padding: 0 4px 8px; border-bottom: 2px solid var(--ink);
+  }
+  #sheet { list-style: none; font-family: 'VT323', monospace; font-size: 1.18rem; line-height: 1.5; min-height: 232px; }
+  #sheet li { display: grid; grid-template-columns: 46px 1fr 52px; gap: 8px; padding: 2px 4px; border-bottom: 1px dotted #c9bda0; }
+  #sheet li .day { color: var(--red-deep); font-weight: bold; }
+  #sheet li .hrs { text-align: right; color: var(--ink); }
+  .caret { display: inline-block; width: 9px; height: 1.05em; background: var(--ink); vertical-align: -2px; animation: blink 1s step-end infinite; }
+  .sheet-foot {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 8px 4px 0;
+    border-top: 2px solid var(--ink); font-family: 'VT323', monospace; font-size: 1.15rem;
+  }
+  .sheet-foot .due { color: var(--red); }
+
+  /* error dialog overlay */
+  .dialog {
+    position: absolute; right: -10px; bottom: -26px; width: 264px; z-index: 5;
+    transform: rotate(2deg);
+  }
+  .dialog .app-body { padding: 14px 14px 16px; background: var(--win); }
+  .dialog p { font-family: 'VT323', monospace; font-size: 1.16rem; line-height: 1.25; color: var(--ink); }
+  .dialog .bang { font-size: 1.5rem; }
+  .dialog .row { display: flex; gap: 8px; margin-top: 12px; }
+  .dialog .mini {
+    font-family: 'Silkscreen', monospace; font-size: 0.56rem; padding: 7px 9px; border: 2px solid var(--ink);
+    background: var(--paper); box-shadow: 2px 2px 0 var(--ink); cursor: pointer;
+  }
+  .dialog .mini.primary { background: var(--red); color: var(--paper); }
+
+  /* ticking strip */
+  .ticker {
+    background: var(--ink); color: var(--paper); border-bottom: 2.5px solid var(--ink);
+    font-family: 'VT323', monospace; font-size: 1.15rem; letter-spacing: 0.02em;
+  }
+  .ticker .wrap { padding: 9px 24px; display: flex; align-items: center; gap: 12px; justify-content: center; text-align: center; }
+  .ticker b { color: var(--amber); }
+  .ticker .blip { color: var(--red); }
+
+  /* ---------- GENERIC SECTION ---------- */
+  section { padding: 84px 0; border-bottom: 2.5px solid var(--ink); }
+  .section-tag { font-family: 'Silkscreen', monospace; font-size: 0.7rem; color: var(--red); letter-spacing: 0.1em; text-transform: uppercase; }
+  h2.big { font-size: clamp(2rem, 4.4vw, 3.3rem); margin-top: 14px; max-width: 20ch; }
+
+  /* ---------- MANIFESTO ---------- */
+  .manifesto { max-width: 720px; }
+  .manifesto p { font-size: 1.24rem; line-height: 1.62; margin-top: 22px; color: var(--ink); }
+  .manifesto p.lead-cap::first-letter { }
+  .manifesto .punch { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--red); line-height: 1.25; }
+  .manifesto .sign { font-family: 'VT323', monospace; font-size: 1.3rem; color: var(--ink-soft); margin-top: 30px; }
+
+  /* ---------- STATS ---------- */
+  .lie-head { max-width: 760px; margin-bottom: 46px; }
+  .lie-head p { font-size: 1.16rem; color: var(--ink-soft); margin-top: 18px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .stat {
+    background: var(--paper); border: 2.5px solid var(--ink); box-shadow: var(--shadow-hard);
+    padding: 22px 20px 24px;
+  }
+  .stat .num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 2.5rem; color: var(--red); letter-spacing: -0.03em; }
+  .stat .cap { margin-top: 12px; font-size: 0.98rem; color: var(--ink); line-height: 1.45; }
+  .stat:nth-child(2) .num { color: var(--ink); }
+  .stat:nth-child(4) .num { color: var(--ink); }
+
+  /* ---------- RECEIPT ---------- */
+  .receipt-sec { background: var(--paper-2); }
+  .receipt-wrap { display: grid; grid-template-columns: 1fr 380px; gap: 54px; align-items: center; }
+  .receipt {
+    background: #fbf6ea; border: 2.5px solid var(--ink); box-shadow: var(--shadow-hard);
+    padding: 26px 26px 30px; font-family: 'VT323', monospace;
+    position: relative;
+  }
+  .receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -13px; height: 13px;
+    background:
+      linear-gradient(45deg, transparent 33%, #fbf6ea 33% 66%, transparent 66%) repeat-x;
+    background-size: 18px 13px;
+    filter: drop-shadow(0 2px 0 var(--ink));
+  }
+  .receipt h3 { font-family: 'Silkscreen', monospace; font-size: 0.78rem; text-align: center; letter-spacing: 0.02em; border-bottom: 2px dashed var(--ink); padding-bottom: 14px; margin-bottom: 12px; }
+  .receipt .line { display: flex; justify-content: space-between; gap: 12px; font-size: 1.28rem; padding: 4px 0; }
+  .receipt .line .d { color: var(--ink); }
+  .receipt .line .v { color: var(--ink); font-weight: bold; }
+  .receipt .rule { border-top: 2px dashed var(--ink); margin: 12px 0; }
+  .receipt .total { font-size: 1.4rem; font-weight: bold; color: var(--red); }
+  .receipt .stamp {
+    position: absolute; top: 14px; right: 10px; transform: rotate(11deg);
+    border: 3px solid var(--red); color: var(--red); font-family: 'Silkscreen', monospace;
+    font-size: 0.64rem; padding: 6px 8px; opacity: 0.85; letter-spacing: 0.04em;
+  }
+  .receipt-copy h2 { font-size: clamp(1.8rem, 3.6vw, 2.7rem); }
+  .receipt-copy p { font-size: 1.16rem; color: var(--ink-soft); margin-top: 18px; }
+
+  /* ---------- SOFTWARE / SHORTLIST ---------- */
+  .soft-head { max-width: 760px; margin-bottom: 44px; }
+  .soft-head p { font-size: 1.16rem; color: var(--ink-soft); margin-top: 18px; }
+  .soft-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .soft-card {
+    background: var(--paper); border: 2.5px dashed var(--ink); padding: 26px 22px; min-height: 210px;
+    display: flex; flex-direction: column;
+  }
+  .soft-card .rank { font-family: 'Silkscreen', monospace; font-size: 0.7rem; color: var(--red); }
+  .soft-card h3 { font-size: 1.35rem; margin-top: 12px; color: var(--ink); }
+  .soft-card p { font-size: 0.98rem; color: var(--ink-soft); margin-top: 10px; flex: 1; }
+  .soft-card .slot { font-family: 'VT323', monospace; font-size: 1.1rem; color: var(--ink-soft); margin-top: 14px; }
+  .soft-card.sponsor { border-style: solid; background: var(--ink); color: var(--paper); }
+  .soft-card.sponsor .rank { color: var(--amber); }
+  .soft-card.sponsor h3 { color: var(--paper); }
+  .soft-card.sponsor p { color: #c9bda0; }
+
+  /* ---------- COMMUNITY / CTA ---------- */
+  .community { background: var(--ink); color: var(--paper); border-bottom: 2.5px solid var(--ink); text-align: center; }
+  .community .eyebrow { color: var(--amber); }
+  .community h2 { font-size: clamp(2.1rem, 5vw, 3.6rem); max-width: 16ch; margin: 0 auto; color: var(--paper); }
+  .community p.sub { font-size: 1.18rem; color: #d6c9ac; margin: 22px auto 0; max-width: 54ch; }
+  .join-form {
+    margin: 34px auto 0; max-width: 520px; display: flex; gap: 12px;
+    background: var(--paper); border: 2.5px solid var(--paper); box-shadow: 6px 6px 0 var(--red);
+    padding: 8px;
+  }
+  .join-form input {
+    flex: 1; border: 0; background: transparent; padding: 12px 12px; font-family: 'Inter', sans-serif;
+    font-size: 1rem; color: var(--ink); outline: none;
+  }
+  .join-form input::placeholder { color: #8a7d63; }
+  .join-note { font-family: 'VT323', monospace; font-size: 1.15rem; color: #a99a7a; margin-top: 18px; }
+  .join-ok { display: none; margin-top: 22px; font-family: 'VT323', monospace; font-size: 1.4rem; color: var(--amber); }
+
+  /* ---------- FOOTER ---------- */
+  footer { background: var(--paper); padding: 46px 0 60px; }
+  .foot-grid { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .foot-brand { font-family: 'Silkscreen', monospace; font-size: 0.95rem; }
+  .foot-brand .cursor { color: var(--red); }
+  .foot-tag { font-family: 'VT323', monospace; font-size: 1.2rem; color: var(--ink-soft); margin-top: 12px; max-width: 40ch; }
+  .foot-fine { font-size: 0.82rem; color: var(--ink-soft); margin-top: 18px; max-width: 52ch; }
+  .foot-links { font-family: 'VT323', monospace; font-size: 1.2rem; display: flex; flex-direction: column; gap: 4px; }
+  .foot-links a:hover { color: var(--red); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 64px; }
+    .app-window { transform: rotate(0); max-width: 460px; }
+    .dialog { position: static; width: 100%; max-width: 300px; transform: rotate(0); margin-top: 22px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .receipt-wrap { grid-template-columns: 1fr; gap: 40px; }
+    .soft-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 480px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .join-form { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">TIMETRACKINGSUCKS<span class="cursor">_</span></a>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#manifesto">Manifesto</a>
+        <a href="#lie">The 6-Min Lie</a>
+        <a href="#shortlist">Shortlist</a>
+      </div>
+      <a href="#join" class="btn btn-sm">Join the community</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">A support group, basically</span>
+      <h1>Time tracking sucks<span class="dot">.</span></h1>
+      <p class="lede">Nobody has ever filed a timesheet and felt good about it. Not once, in the entire history of work. This is a home for the rest of us — the millions reverse-engineering an entire week from Slack messages and a haunted calendar every Friday at <strong>4:47pm</strong>.</p>
+      <div class="hero-cta">
+        <a href="#join" class="btn">Join the community</a>
+        <a href="#manifesto" class="btn btn-ghost">Read the manifesto ↓</a>
+      </div>
+      <p class="hero-fine">&gt; Free. Anonymous. We will never ask you to log 0.1 for "reading this."</p>
+    </div>
+
+    <div style="position: relative;">
+      <!-- Fake timesheet application window -->
+      <div class="window app-window">
+        <div class="titlebar">
+          <span class="close"></span>
+          <span class="t-label">TimeSheet 3.1 — Week 31</span>
+          <span class="spacer"></span>
+        </div>
+        <div class="app-body">
+          <div class="sheet-head">
+            <span>DAY</span><span>WHAT YOU "DID"</span><span>HRS</span>
+          </div>
+          <ul id="sheet"></ul>
+          <div class="sheet-foot">
+            <span>UNLOGGED: <span class="due" id="unlogged">37.4</span> hrs</span>
+            <span class="due">DUE IN 13 MIN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error dialog -->
+      <div class="window dialog">
+        <div class="titlebar"><span class="t-label">⚠ System Message</span></div>
+        <div class="app-body">
+          <p><span class="bang">⚠️</span> Your week is due. Accuracy is optional. Continue ruining your Friday?</p>
+          <div class="row">
+            <span class="mini">PANIC</span>
+            <span class="mini primary">MAKE IT UP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker">
+  <div class="wrap">
+    <span class="blip">●</span>
+    <span>Hours logged as <b>"Misc — Other"</b> since you opened this page: <b id="counter">0.0</b></span>
+  </div>
+</div>
+
+<!-- ============ MANIFESTO ============ -->
+<section id="manifesto">
+  <div class="wrap">
+    <span class="section-tag">Filed anonymously</span>
+    <h2 class="big">A short, angry manifesto.</h2>
+    <div class="manifesto">
+      <p>Let's say the quiet part out loud: time tracking is a tax on doing the actual job.</p>
+      <p>You did the work. You know you did it. Your manager knows you did it. And still, every Friday, you sit there reconstructing forty hours of your one wild and precious life from calendar invites and vibes — rounding a ninety-minute meeting you'd pay to forget into a tidy <em>"1.5 — Stakeholder Sync."</em></p>
+      <p class="punch">That's not tracking. That's historical fiction with a submit button.</p>
+      <p>Here's a secret from inside the building: <strong>everyone knows.</strong> Finance knows the numbers are soft. Entire quarterly forecasts get built on data invented in a panic by someone who just wanted to log off. The timesheet doesn't measure your work. It measures how good you are at remembering — or inventing — what you did. Those are different skills. Neither one ships anything.</p>
+      <p>We're not here to fix it. Smarter, richer people have tried and failed. We're here to <strong>admit it</strong> — loudly, together, and with receipts.</p>
+      <p class="sign">— Filed anonymously, 0.1 hours at a time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE 6-MINUTE LIE ============ -->
+<section id="lie">
+  <div class="wrap">
+    <div class="lie-head">
+      <span class="section-tag">Exhibit A</span>
+      <h2 class="big">The six-minute lie.</h2>
+      <p>Somewhere, decades ago, a consultant decided a human life should be divided into tenths of an hour. Six-minute blocks. As if thought, attention, or lunch arrives in clean decimals. We have been rounding up ever since.</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="num">0.1</div>
+        <div class="cap">The smallest slice of your existence a lawyer will bill you for. Also roughly how long it takes to resent one.</div>
+      </div>
+      <div class="stat">
+        <div class="num">26 hrs</div>
+        <div class="cap">Time the average person spends per year <em>filling out</em> timesheets. Logged, appropriately, as "Admin — Other."</div>
+      </div>
+      <div class="stat">
+        <div class="num">4:47pm</div>
+        <div class="cap">The exact Friday moment when accurate memory ends and creative writing takes over.</div>
+      </div>
+      <div class="stat">
+        <div class="num">100%</div>
+        <div class="cap">Of timesheets that are, at best, a confident guess. Yes, including yours. Especially yours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE RECEIPT ============ -->
+<section class="receipt-sec">
+  <div class="wrap receipt-wrap">
+    <div class="receipt">
+      <span class="stamp">OVERDUE</span>
+      <h3>★ WEEKLY TIMESHEET RITUAL ★</h3>
+      <div class="line"><span class="d">Staring at empty calendar</span><span class="v">0.3</span></div>
+      <div class="line"><span class="d">"What did I even do Tuesday"</span><span class="v">0.4</span></div>
+      <div class="line"><span class="d">Pure, confident guessing</span><span class="v">0.6</span></div>
+      <div class="line"><span class="d">Rounding up out of spite</span><span class="v">0.2</span></div>
+      <div class="line"><span class="d">Submit → edit → resubmit</span><span class="v">0.3</span></div>
+      <div class="rule"></div>
+      <div class="line"><span class="d">SUBTOTAL</span><span class="v">1.8 hrs</span></div>
+      <div class="line"><span class="d">MORALE</span><span class="v">−100%</span></div>
+      <div class="rule"></div>
+      <div class="line total"><span>TOTAL</span><span>1 Friday</span></div>
+      <div class="line" style="font-size:1.05rem; color:var(--ink-soft); margin-top:6px;"><span>…that you are not getting back.</span></div>
+    </div>
+    <div class="receipt-copy">
+      <span class="section-tag">Exhibit B</span>
+      <h2 style="margin-top:12px;">An itemized receipt for one (1) wasted Friday.</h2>
+      <p>Multiply by every Friday. Multiply by every person on your team. Multiply by every team in the building. Congratulations — you've just found the most expensive report nobody reads.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHORTLIST (monetization-ready) ============ -->
+<!--
+  MONETIZATION NOTE (for you, not visitors):
+  This section is the revenue engine. Each card = a B2B time-tracking vendor slot.
+  - Swap the placeholder cards for real reviews/affiliate links once the audience exists.
+  - The ".sponsor" card is a paid-placement slot. Link it to a "Sponsor / advertise" page or mailto.
+  - Keep the framing honest ("ranked by how little it makes you quit") — that credibility is the product.
+-->
+<section id="shortlist">
+  <div class="wrap">
+    <div class="soft-head">
+      <span class="section-tag">Exhibit C — the reluctant part</span>
+      <h2 class="big">Fine. If you must track time, use something that sucks less.</h2>
+      <p>We're realists. Somewhere downstream a client is getting billed and an investor wants a number, so the timesheet isn't dying today. If you're going to be forced to log your life in six-minute increments, at least pick a tool that respects your Friday. We're building the honest, no-BS shortlist — ranked by how little it makes you want to quit. Reviewed by people who genuinely resent doing this.</p>
+    </div>
+    <div class="soft-grid">
+      <div class="soft-card">
+        <span class="rank">#1 — TBD</span>
+        <h3>The one that doesn't nag</h3>
+        <p>Coming soon. The tool that logs your time without three reminder emails and a passive-aggressive Slack bot.</p>
+        <span class="slot">&gt; review pending</span>
+      </div>
+      <div class="soft-card">
+        <span class="rank">#2 — TBD</span>
+        <h3>The one your finance team likes</h3>
+        <p>Coming soon. Somehow keeps accounting happy without making everyone else miserable. Allegedly.</p>
+        <span class="slot">&gt; review pending</span>
+      </div>
+      <div class="soft-card sponsor">
+        <span class="rank">◆ THIS SPOT</span>
+        <h3>Your tool here.</h3>
+        <p>Are you a time-tracking company that actually sucks less? Our audience is exactly the people who choose your software. Let's talk.</p>
+        <a href="#join" class="btn btn-amber btn-sm" style="margin-top:14px; align-self:flex-start;">Advertise with us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY / JOIN ============ -->
+<section class="community" id="join">
+  <div class="wrap">
+    <span class="eyebrow">You are not alone at 4:47pm</span>
+    <h2>Join the community of people who hate timesheets.</h2>
+    <p class="sub">One newsletter that reads your mind and your calendar: war stories from inside the timesheet-industrial complex, the occasional genuinely useful tool, and the grim solidarity of thousands of people rounding up together. Free. Anonymous. Unsubscribe the moment your rage subsides.</p>
+
+    <form class="join-form" id="joinForm" novalidate>
+      <input type="email" id="joinEmail" placeholder="you@wherever-you'd-rather-be.com" aria-label="Email address" required />
+      <button type="submit" class="btn">Join the community</button>
+    </form>
+    <p class="join-ok" id="joinOk">✓ You're in. Check your inbox. Log it as 0.1 — "Professional Development."</p>
+    <p class="join-note">&gt; Be early. Join the founding members — the first thousand to admit it out loud.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <div class="foot-brand">TIMETRACKINGSUCKS<span class="cursor">_</span></div>
+      <p class="foot-tag">A support group disguised as a website.</p>
+      <p class="foot-fine">This page took 0.4 hours to build. We logged it as 2.0. Not affiliated with your employer, your timesheet software, or the consultant who invented the six-minute increment. Filed anonymously.</p>
+    </div>
+    <div class="foot-links">
+      <a href="#manifesto">The Manifesto</a>
+      <a href="#lie">The 6-Minute Lie</a>
+      <a href="#shortlist">The Shortlist</a>
+      <a href="#join">Join the community</a>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:30px; font-family:'VT323',monospace; font-size:1.05rem; color:var(--ink-soft);">© 2026 · All hours reserved.</div>
+</footer>
+
+<script>
+  // ---- Fake timesheet typing animation ----
+  (function () {
+    var sheet = document.getElementById('sheet');
+    if (!sheet) return;
+    var entries = [
+      ['MON', 'Strategic Alignment', '0.1'],
+      ['MON', '"Circling back"', '0.1'],
+      ['TUE', 'Meeting about the meeting', '0.1'],
+      ['TUE', 'Looking for the Zoom link', '0.1'],
+      ['WED', 'Being on mute', '0.1'],
+      ['WED', 'Synergy (unclear)', '0.1'],
+      ['THU', 'Reply-all apology thread', '0.1'],
+      ['FRI', 'Making this up right now', '0.1']
+    ];
+    var i = 0, j = 0;
+    var li = null, span = null;
+
+    function step() {
+      if (i >= entries.length) {
+        // pause, then reset for the loop
+        setTimeout(function () { sheet.innerHTML = ''; i = 0; j = 0; start(); }, 2600);
+        return;
+      }
+      var e = entries[i];
+      if (j === 0) {
+        li = document.createElement('li');
+        li.innerHTML = '<span class="day">' + e[0] + '</span><span class="task"></span><span class="hrs"></span>';
+        sheet.appendChild(li);
+        span = li.querySelector('.task');
+        span.innerHTML = '<span class="caret"></span>';
+      }
+      var full = e[1];
+      if (j <= full.length) {
+        span.textContent = full.slice(0, j);
+        var caret = document.createElement('span');
+        caret.className = 'caret';
+        span.appendChild(caret);
+        j++;
+        setTimeout(step, 42 + Math.round((j % 3) * 12));
+      } else {
+        span.textContent = full;               // drop caret
+        li.querySelector('.hrs').textContent = e[2];
+        i++; j = 0;
+        setTimeout(step, 360);
+      }
+    }
+    function start() { step(); }
+    start();
+  })();
+
+  // ---- "Misc — Other" running counter ----
+  (function () {
+    var el = document.getElementById('counter');
+    if (!el) return;
+    var start = null, val = 0;
+    function tick(t) {
+      if (start === null) start = t;
+      // absurd rate: the world logs a LOT of misc hours
+      val = ((t - start) / 1000) * 27.3;
+      el.textContent = val.toFixed(1);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // ---- Join form (placeholder — wire to your ESP later) ----
+  (function () {
+    var form = document.getElementById('joinForm');
+    if (!form) return;
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var email = document.getElementById('joinEmail');
+      if (!email.value || email.value.indexOf('@') === -1) {
+        email.focus();
+        return;
+      }
+      /* TODO: POST to your email provider (Beehiiv / ConvertKit / Substack / Circle).
+         For now we just confirm on the page. */
+      form.style.display = 'none';
+      document.getElementById('joinOk').style.display = 'block';
+    });
+  })();
+</script>
+</body>
+</html>
